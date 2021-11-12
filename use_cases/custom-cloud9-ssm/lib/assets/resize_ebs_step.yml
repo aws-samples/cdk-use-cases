@@ -1,0 +1,13 @@
+- name: ResizeEBS
+  action: aws:runShellScript
+  inputs:
+    runCommand:
+    - "#!/bin/bash"
+    - echo '=== Resizing EBS volume ==='
+    - export AWS_DEFAULT_REGION=$(curl -s  169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
+    - instanceId=$(curl -s  169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.instanceId')
+    - volumeId=$(aws ec2 describe-instances --instance-ids $instanceId | jq -r '.Reservations[0].Instances[0].BlockDeviceMappings[0].Ebs.VolumeId')
+    - aws ec2 modify-volume --volume-id $volumeId --size {{ size }}
+    - echo '=== Resizing file system ==='
+    - sudo growpart /dev/xvda 1
+    - sudo resize2fs $(df -h |awk '/^\/dev/{print $1}')
