@@ -1,0 +1,97 @@
+{
+  "name": "@cdk-use-cases/custom-cloud9-ssm",
+  "version": "1.0.3",
+  "description": "Pattern for Cloud9 EC2 environment and SSM Document.",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "bin": {
+    "custom-cloud9-ssm": "bin/custom-cloud9-ssm.js"
+  },
+  "scripts": {
+    "build": "jsii",
+    "test": "jest --coverage",
+    "clean": "tsc -b --clean",
+    "watch": "jsii -w",
+    "package": "jsii-pacmak"
+  },
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com",
+    "organization": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aws-samples/cdk-use-cases.git",
+    "directory": "use-cases/custom-cloud9-ssm"
+  },
+  "devDependencies": {
+    "@aws-cdk/assert": "1.129.0",
+    "@types/jest": "^26.0.10",
+    "@types/node": "10.17.27",
+    "aws-cdk": "1.129.0",
+    "jest": "^26.4.2",
+    "jsii": "^1.43.0",
+    "jsii-pacmak": "^1.43.0",
+    "ts-jest": "^26.2.0",
+    "ts-node": "^9.0.0",
+    "typescript": "~3.9.7",
+    "@aws-cdk/aws-cloud9": "1.132.0",
+    "@aws-cdk/aws-ssm": "1.132.0",
+    "@aws-cdk/core": "1.132.0",
+    "@aws-cdk/aws-iam": "1.132.0",
+    "constructs": "3.3.161"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-cloud9": "^1.132.0",
+    "@aws-cdk/aws-ec2": "^1.132.0",
+    "@aws-cdk/aws-iam": "^1.132.0",
+    "@aws-cdk/aws-lambda": "^1.132.0",
+    "@aws-cdk/aws-ssm": "^1.132.0",
+    "@aws-cdk/core": "1.132.0",
+    "yaml": "^1.10.2"
+  },
+  "peerDependencies": {
+    "@aws-cdk/aws-cloud9": "^1.132.0",
+    "@aws-cdk/aws-ssm": "^1.132.0",
+    "@aws-cdk/core": "1.132.0",
+    "@aws-cdk/aws-iam": "^1.132.0",
+    "constructs": "^3.3.161"
+  },
+  "bundledDependencies": [
+    "yaml"
+  ],
+  "keywords": [
+    "aws",
+    "cdk",
+    "awscdk",
+    "AWS Solutions Constructs",
+    "Cloud9",
+    "EC2",
+    "SSM",
+    "Systems Manager"
+  ],
+  "license": "Apache-2.0",
+  "stability": "experimental",
+  "jsii": {
+    "outdir": "dist",
+    "versionFormat": "short",
+    "targets": {
+      "java": {
+        "package": "software.amazon.cdkusecases.customcloud9ssm",
+        "maven": {
+          "groupId": "software.amazon.cdkusecases",
+          "artifactId": "customcloud9ssm"
+        }
+      },
+      "python": {
+        "distName": "cdk-use-cases.custom-cloud9-ssm",
+        "module": "cdk_use_cases.custom_cloud9_ssm"
+      },
+      "dotnet": {
+        "namespace": "Amazon.UseCases.CustomCloud9SSM",
+        "packageId": "Amazon.UseCases.CustomCloud9SSM",
+        "iconUrl": "https://raw.githubusercontent.com/aws/aws-cdk/master/logo/default-256-dark.png"
+      }
+    }
+  }
+}

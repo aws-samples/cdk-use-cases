@@ -1,0 +1,16 @@
+bin
+cdk.out
+dist
+lib/index.d.ts
+node_modules
+test
+.idea/*
+
+.jsii
+cdk.json
+*.js
+package-lock.json
+tsconfig.json
+tsconfig.tsbuildinfo
+stack.yml
+main.drawio

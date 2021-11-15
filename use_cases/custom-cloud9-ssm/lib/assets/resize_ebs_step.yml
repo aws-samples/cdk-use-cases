@@ -1,0 +1,29 @@
+- name: ResizeEBS
+  action: aws:runShellScript
+  inputs:
+    runCommand:
+    - "#!/bin/bash"
+    - echo '=== Installing jq ==='
+    - sudo yum -y install jq
+    - echo '=== Exporting current region ==='
+    - export AWS_DEFAULT_REGION=$(curl -s  169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
+    - echo 'Region is ${AWS_DEFAULT_REGION}'
+    - echo '=== Gathering instance Id ==='
+    - instanceId=$(curl -s  169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.instanceId')
+    - echo 'Instance Id is ${instanceId}'
+    - echo '=== Resizing EBS volume ==='
+    - volumeId=$(aws ec2 describe-instances --instance-ids $instanceId | jq -r '.Reservations[0].Instances[0].BlockDeviceMappings[0].Ebs.VolumeId')
+    - echo 'Volume Id is ${volumeId}'
+    - aws ec2 modify-volume --volume-id $volumeId --size {{ size }}
+    - echo '=== Waiting for the volume to enter the optimizing state ==='
+    - while [ true ]
+    - do
+    -   modificationState=$(aws ec2 describe-volumes-modifications --volume-ids $volumeId | jq -r '.VolumesModifications[0].ModificationState')
+    -   if [ $modificationState == "optimizing" ] ; then
+    -     break
+    -   fi
+    -   sleep 5
+    - done
+    - echo '=== Resizing file system ==='
+    - sudo growpart /dev/xvda 1
+    - sudo resize2fs $(df -h |awk '/^\/dev/{print $1}')
