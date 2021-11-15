@@ -1,11 +1,2 @@
 schemaVersion: '2.2'
 description: Bootstrap Cloud9 EC2 instance
-mainSteps:
-- name: InstallPackages
-  action: aws:runShellScript
-  inputs:
-    runCommand:
-    - "#!/bin/bash"
-    - echo '=== Installing packages ==='
-    - sudo yum -y install jq
-    - sudo pip install boto3
