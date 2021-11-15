@@ -14,9 +14,8 @@
 
 | **Language**     | **Package**        |
 |:-------------|-----------------|
-|![Python Logo](https://docs.aws.amazon.com/cdk/api/latest/img/python32.png) Python|`cdk_use_cases.custom_cloud9_ssm`|
-|![Typescript Logo](https://docs.aws.amazon.com/cdk/api/latest/img/typescript32.png) Typescript|`@cdk-use-cases/custom-cloud9-ssm`|
-|![Java Logo](https://docs.aws.amazon.com/cdk/api/latest/img/java32.png) Java|`software.amazon.cdkusecases.customcloud9ssm`|
+|![Python Logo](https://docs.aws.amazon.com/cdk/api/latest/img/python32.png) Python|[`cdk_use_cases.custom_cloud9_ssm`](https://pypi.org/project/cdk-use-cases.custom-cloud9-ssm/)|
+|![Typescript Logo](https://docs.aws.amazon.com/cdk/api/latest/img/typescript32.png) Typescript|[`@cdk-use-cases/custom-cloud9-ssm`](https://www.npmjs.com/package/@cdk-use-cases/custom-cloud9-ssm)|
 
 This pattern implements a Cloud9 EC2 environment, applying an initial configuration to the EC2 instance using an SSM Document. It includes helper methods to add steps and parameters to the SSM Document and to resize the EBS volume of the EC2 instance to a given size.
 
@@ -25,6 +24,8 @@ Here is a minimal deployable pattern definition in Typescript:
 ``` typescript
 new CustomCloud9Ssm(stack, 'CustomCloud9Ssm', {});
 ```
+
+You can view [other usage examples](#other-usage-examples).
 
 ## Initializer
 
@@ -87,7 +88,7 @@ Adds a step to the SSM Document content that resizes the EBS volume of the EC2 i
 
 _Parameters_
 
-* size `number`: size to resize the EBS volume to.
+* size `number`: size in GiB to resize the EBS volume to.
 
 
 ## Default settings
@@ -101,11 +102,70 @@ Out of the box implementation of the Construct without any override will set the
 
 ### SSM Document
 * Creates an SSM Document with:
-    * A step that installs jq and boto3.
-    * A step that resizes the EBS volume of the EC2 instance to 100GB.
+    * A step that installs jq.
+    * A step that resizes the EBS volume of the EC2 instance to 100 GiB.
 
 ## Architecture
 ![Architecture Diagram](architecture.png)
+
+## Other usage examples
+
+_Using default configuration and adding steps_
+
+``` typescript
+import {CustomCloud9Ssm} from '@cdk-use-cases/custom-cloud9-ssm';
+
+// Define a step that installs boto3
+const boto3Step = `
+- name: InstallBoto3
+  action: aws:runShellScript
+  inputs:
+    runCommand:
+    - "#!/bin/bash"
+    - sudo pip install boto3
+`
+
+// Create the custom environment
+let customCloud9 = new CustomCloud9Ssm(this, 'CustomCloud9Ssm', {})
+
+// Add your step to the default document configuration
+customCloud9.addDocumentSteps(boto3Step)
+```
+
+_Providing props for the SSM Document and resizing the EBS volume_
+
+``` typescript
+import {CustomCloud9Ssm, CustomCloud9SsmProps} from '@cdk-use-cases/custom-cloud9-ssm';
+const yaml = require('yaml')
+
+// Define the content of the document
+const content = `
+schemaVersion: '2.2'
+description: Bootstrap Cloud9 EC2 instance
+mainSteps:
+- name: InstallBoto3
+  action: aws:runShellScript
+  inputs:
+    runCommand:
+    - "#!/bin/bash"
+    - sudo pip install boto3
+`
+
+// Specify the configuration for the SSM Document
+const cloud9Props: CustomCloud9SsmProps = {
+    ssmDocumentProps: {
+        documentType: 'Command',
+        content: yaml.parse(content),
+        name: 'MyDocument'
+    }
+}
+
+// Create the custom environment
+let customCloud9 = new CustomCloud9Ssm(this, 'CustomCloud9Ssm', cloud9Props)
+
+// Add a step to resize the EBS volume to 50GB
+customCloud9.resizeEBSTo(50)
+```
 
 ***
 &copy; Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
