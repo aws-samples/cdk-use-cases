@@ -1,6 +1,6 @@
 {
-  "name": "custom-cloud9-ssm",
-  "version": "0.0.0",
+  "name": "@cdk-use-cases/custom-cloud9-ssm",
+  "version": "1.0.3",
   "description": "Pattern for Cloud9 EC2 environment and SSM Document.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/bpguasch/cdk-use-cases.git",
+    "url": "https://github.com/aws-samples/cdk-use-cases.git",
     "directory": "use-cases/custom-cloud9-ssm"
   },
   "devDependencies": {
