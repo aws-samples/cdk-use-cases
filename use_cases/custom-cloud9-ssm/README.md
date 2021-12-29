@@ -22,7 +22,7 @@ This pattern implements a Cloud9 EC2 environment, applying an initial configurat
 Here is a minimal deployable pattern definition in Typescript:
 
 ``` typescript
-new CustomCloud9Ssm(stack, 'CustomCloud9Ssm', {});
+new CustomCloud9Ssm(stack, 'CustomCloud9Ssm');
 ```
 
 You can view [other usage examples](#other-usage-examples).
@@ -44,7 +44,7 @@ _Parameters_
 | **Name**     | **Type**        | **Description** |
 |:-------------|:----------------|-----------------|
 | ssmDocumentProps? | [ssm.CfnDocumentProps](https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_aws-ssm.CfnDocumentProps.html) | Optional configuration for the SSM Document. |
-| cloud9Ec2Props? | [cloud9.Ec2EnvironmentProps](https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_aws-cloud9.Ec2EnvironmentProps.html) | Optional configuration for the Cloud9 EC2 environment. |
+| cloud9Ec2Props? | [cloud9.CfnEnvironmentEC2Props](https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_aws-cloud9.CfnEnvironmentEC2Props.html) | Optional configuration for the Cloud9 EC2 environment. |
 
 ## Pattern Properties
 
@@ -97,8 +97,7 @@ Out of the box implementation of the Construct without any override will set the
 
 ### Cloud9 EC2 environment
 * Creates a Cloud9 EC2 environment with:
-    * New VPC that spans 2 AZs and has one public and private subnet per AZ.
-    * T2.micro instance type.
+    * T3.large instance type.
 
 ### SSM Document
 * Creates an SSM Document with:
@@ -126,7 +125,7 @@ const boto3Step = `
 `
 
 // Create the custom environment
-let customCloud9 = new CustomCloud9Ssm(this, 'CustomCloud9Ssm', {})
+let customCloud9 = new CustomCloud9Ssm(this, 'CustomCloud9Ssm')
 
 // Add your step to the default document configuration
 customCloud9.addDocumentSteps(boto3Step)
