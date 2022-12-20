@@ -174,7 +174,7 @@ export class CustomCloud9Ssm extends cdk.Construct {
         let code: string = fs.readFileSync(CustomCloud9Ssm.ATTACH_PROFILE_FILE_NAME, 'utf8')
 
         const lambdaFunction = new lambda.Function(this,'LambdaFunction', {
-            runtime: lambda.Runtime.PYTHON_3_6,
+            runtime: lambda.Runtime.PYTHON_3_9,
             code: lambda.Code.fromInline(code),
             handler: 'index.handler',
             timeout: cdk.Duration.seconds(60)
