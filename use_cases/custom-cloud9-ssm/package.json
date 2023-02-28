@@ -1,11 +1,11 @@
 {
   "name": "@cdk-use-cases/custom-cloud9-ssm",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Pattern for Cloud9 EC2 environment and SSM Document.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "bin": {
-    "custom-cloud9-ssm": "bin/custom-cloud9-ssm.ts"
+    "custom-cloud9-ssm": "bin/custom-cloud9-ssm.js"
   },
   "scripts": {
     "build": "jsii",

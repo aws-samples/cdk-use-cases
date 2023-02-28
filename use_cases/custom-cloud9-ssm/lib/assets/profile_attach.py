@@ -40,7 +40,7 @@ def is_association_applied(association_id):
 def handler(event, context):
     if event['RequestType'] == 'Create':
         # Extract context variables
-        c9_env_id = event['ResourceProperties']['cloud9_env_id']
+        stack_id = event['ResourceProperties']['stack_id']
         profile_arn = event['ResourceProperties']['profile_arn']
         association_id = event['ResourceProperties']['association_id']
 
@@ -51,7 +51,7 @@ def handler(event, context):
             print('Retrieving EC2 instance Id')
 
             instance_id = client.describe_instances(
-                Filters=[{'Name': 'tag:aws:cloud9:environment', 'Values': [c9_env_id]}]
+                Filters=[{'Name': 'tag:stack-id', 'Values': [stack_id]}]
             )['Reservations'][0]['Instances'][0]['InstanceId']
 
             # Associate the SSM instance profile

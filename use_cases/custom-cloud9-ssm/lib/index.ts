@@ -1,4 +1,4 @@
-import {CustomResource, Duration, Tags} from 'aws-cdk-lib';
+import {CustomResource, Duration, Stack, Tags} from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as cloud9 from 'aws-cdk-lib/aws-cloud9';
@@ -105,6 +105,9 @@ export class CustomCloud9Ssm extends Construct {
             cloud9Env = new cloud9.CfnEnvironmentEC2(this,'Cloud9Ec2Environment', props.cloud9Ec2Props)
         }
 
+        // Add a unique tag to the environment to use it as a target for the SSM Association
+        Tags.of(cloud9Env).add('stack-id', Stack.of(this).stackId)
+
         // Create a Role for the EC2 instance and an instance profile with it
         this.ec2Role = new iam.Role(this,'Ec2Role', {
             assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
@@ -112,7 +115,7 @@ export class CustomCloud9Ssm extends Construct {
             managedPolicies: [
                 iam.ManagedPolicy.fromManagedPolicyArn(
                     this,
-                    id + '-SsmManagedPolicy',
+                    'SsmManagedPolicy',
                     'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'
                 )
             ]
@@ -143,16 +146,13 @@ export class CustomCloud9Ssm extends Construct {
             this.document = new ssm.CfnDocument(this,'SsmDocument', props.ssmDocumentProps)
         }
 
-        // Add the name of the document as a tag to the EC2 instance to identify it as a target of the SSM Association
-        Tags.of(cloud9Env).add("SSMConfiguration", this.document.name as string)
-
         // Create an SSM Association to apply the document configuration
         ssmAssociation = new ssm.CfnAssociation(this,'SsmAssociation', {
             name: this.document.name as string,
             targets: [
                 {
-                    key: 'tag:SSMConfiguration',
-                    values: [this.document.name as string]
+                    key: 'tag:stack-id',
+                    values: [Stack.of(this).stackId]
                 }
             ]
         })
@@ -187,7 +187,7 @@ export class CustomCloud9Ssm extends Construct {
         customResource = new CustomResource(this, 'CustomResource', {
             serviceToken: lambdaFunction.functionArn,
             properties: {
-                document_name: this.document.name as string,
+                stack_id: Stack.of(this).stackId,
                 profile_arn: instanceProfile.attrArn,
                 association_id: ssmAssociation.attrAssociationId
             }
