@@ -161,7 +161,7 @@ export class CustomCloud9Ssm extends Construct {
         let code: string = fs.readFileSync(CustomCloud9Ssm.ATTACH_PROFILE_FILE_NAME, 'utf8')
 
         const lambdaFunction = new lambda.Function(this,'ProfileAttachLambdaFunction', {
-            runtime: lambda.Runtime.PYTHON_3_6,
+            runtime: lambda.Runtime.PYTHON_3_9,
             code: lambda.Code.fromInline(code),
             handler: 'index.handler',
             timeout: Duration.seconds(800)
