@@ -1,6 +1,6 @@
 {
   "name": "@cdk-use-cases/custom-cloud9-ssm",
-  "version": "1.2.0",
+  "version": "1.3.9",
   "description": "Pattern for Cloud9 EC2 environment and SSM Document.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -28,25 +28,23 @@
     "@types/jest": "^26.0.10",
     "@types/node": "10.17.27",
     "aws-cdk": "2.3.0",
-    "aws-cdk-lib": "2.3.0",
-    "constructs": "^10.0.0",
+    "constructs": "10.3.0",
     "jest": "^26.4.2",
-    "jsii": "^1.50.0",
-    "jsii-pacmak": "^1.50.0",
-    "jsii-release": "^0.2.212",
+    "jsii": "^1.96.0",
+    "jsii-pacmak": "^1.96.0",
+    "jsii-release": "^0.2.606",
     "source-map-support": "^0.5.21",
     "ts-jest": "^26.2.0",
     "ts-node": "^9.0.0",
     "typescript": "~3.9.7"
   },
   "dependencies": {
-    "aws-cdk-lib": "2.3.0",
-    "constructs": "^10.0.0",
+    "aws-cdk-lib": "^2.135.0",
+    "constructs": "^10.3.0",
     "yaml": "^1.10.2"
   },
   "peerDependencies": {
-    "aws-cdk-lib": "2.3.0",
-    "constructs": "^10.0.0"
+    "constructs": "^10.3.0"
   },
   "bundledDependencies": [
     "yaml"
@@ -77,5 +75,8 @@
         "iconUrl": "https://raw.githubusercontent.com/aws/aws-cdk/master/logo/default-256-dark.png"
       }
     }
-  }
+  },
+  "bundleDependencies": [
+    "yaml"
+  ]
 }

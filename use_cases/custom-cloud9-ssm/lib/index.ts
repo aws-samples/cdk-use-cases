@@ -25,11 +25,12 @@ export interface CustomCloud9SsmProps {
 }
 
 export class CustomCloud9Ssm extends Construct {
-    private static readonly DEFAULT_EBS_SIZE = 100
+    private static readonly DEFAULT_EBS_SIZE = 50
     private static readonly DEFAULT_DOCUMENT_FILE_NAME = `${__dirname}/assets/default_document.yml`
     private static readonly RESIZE_STEP_FILE_NAME = `${__dirname}/assets/resize_ebs_step.yml`
+    private static readonly DEPLOY_CDK_STEP_FILE_NAME = `${__dirname}/assets/deploy_cdk_from_tar.yml`
     private static readonly ATTACH_PROFILE_FILE_NAME = `${__dirname}/assets/profile_attach.py`
-    private static readonly DEFAULT_DOCUMENT_NAME = 'CustomCloudSsm-SsmDocument'
+    private static readonly DEFAULT_DOCUMENT_NAME = 'SsmDocument'
 
     private readonly document: ssm.CfnDocument
 
@@ -40,7 +41,7 @@ export class CustomCloud9Ssm extends Construct {
 
     /**
      * Adds one or more steps to the content of the SSM Document.
-     * @param steps: YAML formatted string containing one or more steps to be added to the mainSteps section of the SSM Document.
+     * @param steps YAML formatted string containing one or more steps to be added to the mainSteps section of the SSM Document.
      */
     public addDocumentSteps(steps: string): void {
         // Add the mainSteps section if it doesn't exist
@@ -54,7 +55,7 @@ export class CustomCloud9Ssm extends Construct {
 
     /**
      * Adds one or more parameters to the content of the SSM Document.
-     * @param parameters: YAML formatted string containing one or more parameters to be added to the parameters section of the SSM Document.
+     * @param parameters YAML formatted string containing one or more parameters to be added to the parameters section of the SSM Document.
      */
     public addDocumentParameters(parameters: string): void {
         // Add the parameters section if it doesn't exist
@@ -68,7 +69,7 @@ export class CustomCloud9Ssm extends Construct {
 
     /**
      * Adds a step to the SSM Document content that resizes the EBS volume of the EC2 instance. Attaches the required policies to ec2Role.
-     * @param size: size in GiB to resize the EBS volume to.
+     * @param size in GiB to resize the EBS volume to.
      */
     public resizeEBSTo(size: number): void {
         let steps: string = fs.readFileSync(CustomCloud9Ssm.RESIZE_STEP_FILE_NAME, 'utf8')
@@ -89,6 +90,45 @@ export class CustomCloud9Ssm extends Construct {
         }))
     }
 
+    /**
+     * Adds a step to the SSM Document content that deploys a CDK project from its compressed version.
+     * @param url from where to download the file using the wget command. Attaches the required policies to ec2Role.
+     * @param stackName name of the stack to deploy
+     */
+    public deployCDKProject(url: string, stackName: string = ''): void {
+        let steps: string = fs.readFileSync(CustomCloud9Ssm.DEPLOY_CDK_STEP_FILE_NAME, 'utf8')
+        steps = steps.replace('{{ URL }}', url)
+        steps = steps.replace('{{ STACK_NAME }}', stackName)
+
+
+        // Add the deployment step
+        this.addDocumentSteps(steps)
+
+        // Grant permission to the EC2 instance to work with the s3 bucket that contains bootstrapped files
+        this.ec2Role.addToPolicy(new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: [
+                's3:*'
+            ],
+            resources: ['arn:aws:s3:::cdk-*']
+        }))
+
+        // Grant permission to the EC2 instance to work with the stack that contains bootstrapped , and the stack being deployed
+        const accountId = Stack.of(this).account
+        const region = Stack.of(this).region
+
+        this.ec2Role.addToPolicy(new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: [
+                'cloudformation:*',
+            ],
+            resources: [
+                `arn:aws:cloudformation:${region}:${accountId}:stack/CDKToolkit/*`,
+                `arn:aws:cloudformation:${region}:${accountId}:stack/${stackName}/*`
+            ]
+        }))
+    }
+
     constructor(scope: Construct, id: string, props: CustomCloud9SsmProps = {}) {
         super(scope, id);
 
@@ -98,7 +138,10 @@ export class CustomCloud9Ssm extends Construct {
 
         // Create the Cloud9 environment using the default configuration
         if (!props.cloud9Ec2Props) {
-            cloud9Env = new cloud9.CfnEnvironmentEC2(this,'Cloud9Ec2Environment', {instanceType: "t3.large"})
+            cloud9Env = new cloud9.CfnEnvironmentEC2(this,'Cloud9Ec2Environment', {
+                instanceType: "t3.large",
+                imageId: "amazonlinux-2023-x86_64"
+            })
         }
         // Create the Cloud9 environment using the received props
         else {
@@ -111,7 +154,7 @@ export class CustomCloud9Ssm extends Construct {
         // Create a Role for the EC2 instance and an instance profile with it
         this.ec2Role = new iam.Role(this,'Ec2Role', {
             assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
-            roleName: id + '-CustomCloud9SsmEc2Role',
+            roleName: 'CustomCloud9SsmEc2Role',
             managedPolicies: [
                 iam.ManagedPolicy.fromManagedPolicyArn(
                     this,
@@ -131,7 +174,7 @@ export class CustomCloud9Ssm extends Construct {
             const ssmDocumentProps = {
                 documentType: 'Command',
                 content: yaml.parse(content),
-                name: id + '-' + CustomCloud9Ssm.DEFAULT_DOCUMENT_NAME
+                name: CustomCloud9Ssm.DEFAULT_DOCUMENT_NAME
             }
 
             this.document = new ssm.CfnDocument(this,'SsmDocument', ssmDocumentProps)
@@ -161,10 +204,11 @@ export class CustomCloud9Ssm extends Construct {
         let code: string = fs.readFileSync(CustomCloud9Ssm.ATTACH_PROFILE_FILE_NAME, 'utf8')
 
         const lambdaFunction = new lambda.Function(this,'ProfileAttachLambdaFunction', {
-            runtime: lambda.Runtime.PYTHON_3_9,
+            runtime: lambda.Runtime.PYTHON_3_11,
             code: lambda.Code.fromInline(code),
             handler: 'index.handler',
-            timeout: Duration.seconds(800)
+            timeout: Duration.seconds(800),
+            retryAttempts: 0
         })
 
         // Give permissions to the function to execute some APIs
@@ -193,7 +237,6 @@ export class CustomCloud9Ssm extends Construct {
             }
         })
 
-        // Add resource dependencies
         instanceProfile.node.addDependency(this.ec2Role)
 
         ssmAssociation.node.addDependency(cloud9Env)

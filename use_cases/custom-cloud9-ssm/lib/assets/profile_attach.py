@@ -3,7 +3,7 @@ import cfnresponse
 import time
 
 
-def is_association_applied(association_id):
+def is_association_started(association_id):
     client = boto3.client('ssm')
 
     # Retrieve the execution history of the association
@@ -25,13 +25,7 @@ def is_association_applied(association_id):
     # Retrieve the targets of the execution to see if the SSM agent has picked up the EC2 instance yet
     response = client.describe_association_execution_targets(
         AssociationId=association_id,
-        ExecutionId=response['AssociationExecutions'][0]['ExecutionId'],
-        Filters=[
-            {
-                'Key': 'Status',
-                'Value': 'Success'
-            }
-        ]
+        ExecutionId=response['AssociationExecutions'][0]['ExecutionId']
     )
 
     return 'AssociationExecutionTargets' in response and response['AssociationExecutionTargets']
@@ -69,11 +63,11 @@ def handler(event, context):
                 InstanceIds=[instance_id]
             )
 
-            # Wait for the SSM association to be applied
+            # Wait for the SSM association to be started
             while True:
-                print('Waiting for the association to be applied')
+                print('Waiting for the association to be started')
 
-                if is_association_applied(association_id):
+                if is_association_started(association_id):
                     break
                 else:
                     time.sleep(5)

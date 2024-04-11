@@ -90,6 +90,18 @@ _Parameters_
 
 * size `number`: size in GiB to resize the EBS volume to.
 
+``` typescript
+public deployCDKProject(url: string, stackName: string = ''): void
+```
+
+_Description_
+
+Adds a step to the SSM Document content that deploys a CDK project from its compressed version.
+
+_Parameters_
+
+* url `string`: from where to download the file using the wget command 
+* stackName `string`: name of the stack to deploy
 
 ## Default settings
 
@@ -98,11 +110,12 @@ Out of the box implementation of the Construct without any override will set the
 ### Cloud9 EC2 environment
 * Creates a Cloud9 EC2 environment with:
     * T3.large instance type.
+    * Image id amazonlinux-2023-x86_64.
 
 ### SSM Document
 * Creates an SSM Document with:
     * A step that installs jq.
-    * A step that resizes the EBS volume of the EC2 instance to 100 GiB.
+    * A step that resizes the EBS volume of the EC2 instance to 50 GiB.
 
 ## Architecture
 ![Architecture Diagram](architecture.png)
