@@ -15,7 +15,7 @@ class S3Stack(NestedStack):
 
         bucket = s3.Bucket(
             self, 'Bucket',
-            bucket_name=f'{app_name.lower()}-{hash_suffix}',
+            bucket_name=f'{app_name}-{hash_suffix}',
             auto_delete_objects=True,
             removal_policy=RemovalPolicy.DESTROY,
 

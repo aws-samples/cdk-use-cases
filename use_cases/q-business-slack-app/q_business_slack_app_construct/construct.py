@@ -8,6 +8,15 @@ from .stacks import *
 
 class QBusinessSlackApp(Construct):
     @staticmethod
+    def __create_app_name_parameter(scope):
+        return CfnParameter(
+            scope, "AppName",
+            type="String",
+            default="q-business-slack-app",
+            allowed_pattern=r"^[a-z\-]+$"
+        )
+
+    @staticmethod
     def __create_slack_token_secret(scope):
         secret_value_param = CfnParameter(
             scope, "SlackToken",
@@ -35,14 +44,15 @@ class QBusinessSlackApp(Construct):
             secret_string=secret_value_param.value_as_string
         )
 
-    def __init__(self, scope: Construct, construct_id: str, app_name='QBusinessSlack') -> None:
+    def __init__(self, scope: Construct, construct_id: str) -> None:
         super().__init__(scope, construct_id)
 
+        app_name = self.__create_app_name_parameter(scope)
         self.__create_slack_token_secret(scope)
         self.__create_slack_signing_secret(scope)
 
-        qbusiness_stack = QBusinessStack(scope, "QBusinessStack", app_name)
-        s3_stack = S3Stack(scope, "S3Stack", app_name)
-        ddb_stack = DdbStack(scope, "DynamoDBStack", app_name)
-        lambda_stack = LambdaStack(scope, "LambdaStack", app_name, ddb_stack, qbusiness_stack, s3_stack)
-        ApiGatewayStack(scope, "ApiGatewayStack", app_name, lambda_stack)
+        qbusiness_stack = QBusinessStack(scope, "QBusinessStack", app_name.value_as_string)
+        s3_stack = S3Stack(scope, "S3Stack", app_name.value_as_string)
+        ddb_stack = DdbStack(scope, "DynamoDBStack", app_name.value_as_string)
+        lambda_stack = LambdaStack(scope, "LambdaStack", app_name.value_as_string, ddb_stack, qbusiness_stack, s3_stack)
+        ApiGatewayStack(scope, "ApiGatewayStack", app_name.value_as_string, lambda_stack)
