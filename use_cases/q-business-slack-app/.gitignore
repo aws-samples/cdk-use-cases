@@ -2,3 +2,5 @@
 cdk.out
 cdk.json
 .idea
+q_business_slack_app/__pycache__
+stacks/__pycache__
