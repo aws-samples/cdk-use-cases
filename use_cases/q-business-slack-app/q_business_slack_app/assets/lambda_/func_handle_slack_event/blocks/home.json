@@ -1,0 +1,13 @@
+{
+	"type": "home",
+	"blocks": [
+		{
+			"type": "header",
+			"text": {
+				"type": "plain_text",
+				"text": ":wave: Welcome to this Amazon Q Business App!",
+				"emoji": true
+			}
+		}
+	]
+}

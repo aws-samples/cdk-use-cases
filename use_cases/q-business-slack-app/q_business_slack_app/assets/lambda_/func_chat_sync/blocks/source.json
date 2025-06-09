@@ -1,0 +1,13 @@
+{
+    "type": "rich_text_section",
+    "elements": [
+        {
+            "type": "link",
+            "url": "$SOURCE_URL",
+            "text": "$SOURCE_NAME",
+            "style": {
+                "bold": true
+            }
+        }
+    ]
+}

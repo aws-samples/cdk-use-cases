@@ -1,0 +1,36 @@
+[
+	{
+		"type": "rich_text",
+		"elements": [
+			{
+				"type": "rich_text_section",
+				"elements": [
+					{
+						"type": "emoji",
+						"name": "x"
+					},
+					{
+						"type": "text",
+						"text": "  "
+					},
+					{
+						"type": "text",
+						"text": ""
+					}
+				]
+			},
+			{
+				"type": "rich_text_quote",
+				"elements": [
+					{
+						"type": "text",
+						"text": "",
+						"style": {
+							"italic": true
+						}
+					}
+				]
+			}
+		]
+	}
+]

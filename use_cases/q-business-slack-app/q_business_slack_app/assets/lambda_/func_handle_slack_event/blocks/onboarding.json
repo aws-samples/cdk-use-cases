@@ -1,0 +1,9 @@
+[
+    {
+        "type": "section",
+        "text": {
+            "type": "mrkdwn",
+            "text": ":wave: *Welcome to this Amazon Q Business App!*\n\nTo start solving your doubts, type `/[your-slash-command] ask \"[your question]\"` and the intelligent assistant will help you! To view the list of available operations, type `[your-slash-command] help`."
+        }
+    }
+]

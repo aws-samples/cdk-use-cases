@@ -1,0 +1,23 @@
+{
+    "type": "rich_text",
+    "elements": [
+        {
+            "type": "rich_text_section",
+            "elements": [
+                {
+                    "type": "text",
+                    "text": "Sources:\n",
+                    "style": {
+                        "bold": true
+                    }
+                }
+            ]
+        },
+        {
+            "type": "rich_text_list",
+            "style": "bullet",
+            "indent": 0,
+            "elements": []
+        }
+    ]
+}
