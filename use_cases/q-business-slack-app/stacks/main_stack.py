@@ -2,7 +2,7 @@ from aws_cdk import (
     Stack,
 )
 from constructs import Construct
-from q_business_slack_app import QBusinessSlackApp
+from q_business_slack_app_construct import QBusinessSlackApp
 
 
 class MainStack(Stack):

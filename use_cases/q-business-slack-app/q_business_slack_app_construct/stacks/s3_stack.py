@@ -24,7 +24,7 @@ class S3Stack(NestedStack):
         s3_deployment.BucketDeployment(
             self, 'BucketDeployment',
             destination_bucket=bucket,
-            sources=[s3_deployment.Source.asset("q_business_slack_app/assets/q_app_bucket_contents")]
+            sources=[s3_deployment.Source.asset("q_business_slack_app_construct/assets/q_app_bucket_contents")]
         )
 
         return bucket

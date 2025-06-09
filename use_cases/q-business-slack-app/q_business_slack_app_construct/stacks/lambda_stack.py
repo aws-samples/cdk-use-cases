@@ -10,7 +10,7 @@ from ..constants import *
 class LambdaStack(NestedStack):
     __ARCH = _lambda.Architecture.ARM_64
     __RUNTIME = _lambda.Runtime.PYTHON_3_13
-    __ASSETS_PATH = 'q_business_slack_app/assets/lambda_'
+    __ASSETS_PATH = 'q_business_slack_app_construct/assets/lambda_'
 
     @staticmethod
     def __add_secret_retrieval_permissions(func):
