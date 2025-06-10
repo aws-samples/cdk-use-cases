@@ -20,7 +20,7 @@ This repository contains a CDK Python sample that provides a quick-start to depl
 - [Project architecture](#project-architecture)
 - [Creating and configuring your Slack application](#creating-and-configuring-your-slack-application)
 - [Out of the box features](#out-of-the-box-features)
-- [Understanding the code and execution flow](#understanding-the-code-and-execution-flow)
+- [Understanding the code](#understanding-the-code)
 - [Deploying this sample](#deploying-this-sample)
 - [Adding data sources to the Q Business Application](#adding-data-sources-to-the-q-business-application)
 - [Testing the application](#testing-the-application)
@@ -53,7 +53,7 @@ In regard to operation execution:
 - The `ask` function will post a *processing* message to the user's channel and asynchronously invoke the `chat_sync` function.
 - The `chat_sync` function will take user's text and perform an API call to the Q Business application. Finally. it will update the previous *processing* text with the response of the model.
 
-![image](docs/architecture.png)
+![image](docs/infra.png)
 
 To facilitate the testing process, two completely isolated environments –dev and prod– are deployed. This is achieved by:
 
@@ -65,7 +65,7 @@ When the user triggers an application event (such as opening the app home tab) o
 
 ![image](docs/env_prod.png)
 
-On the other hand, if the user invokes a slash command with the `--dev` option (they must have permission to do so, see [understanding the code](#understanding-the-code-and-execution-flow)), the development environment is used:
+On the other hand, if the user invokes a slash command with the `--dev` option (they must have permission to do so, see [understanding the code](#understanding-the-code)), the development environment is used:
 
 ![image](docs/env_dev.png)
 
@@ -91,11 +91,13 @@ As of this point you will need your REST API endpoints, so you will need to depl
 
 ![image](docs/slack_app_onboarding/step_3.png)
 
+> **Important**: you will need to replace the value of the `SLASH_COMMAND` constant in the AWS Lambda layer with the command that you just defined. See [understanding the code](#custom-aws-lambda-layer).
+
 9. Next, under **Features**, in the **Event Subscriptions** tab, toggle **Enable Events** and fill the Request URL field with the `prod` stage REST API endpoint that contains `handle-slack-event`. If you select the correct one, it should verify shortly.
 10. In the same page, under **Subscribe to bot events**, add `app_home_opened`.
 11. Since you have now enabled Slash commands, the Bot token scopes have changed, and you need to reinstall the application in the workspace.
 
-> **Congratulations**, your Slack integration is now complete! If you open the home tab of your app in Slack, you should receive a welcome message. You can now [test the application](#testing-the-application) or see [understanding the code and execution flow](#understanding-the-code-and-execution-flow).
+> **Congratulations**, your Slack integration is now complete! If you open the home tab of your app in Slack, you should receive a welcome message. You can now [test the application](#testing-the-application) or see [understanding the code](#understanding-the-code).
 
 ## Out of the box features
 
@@ -116,8 +118,42 @@ If you deploy the sample as-is and configure the integration with Slack, the app
 
 > To format the messages that your application sends to users, see [Slack Block Kit](https://api.slack.com/block-kit).
 
-## Understanding the code and execution flow
+## Understanding the code
 
+### CDK Project
+
+- All the application logic is encapsulated in the construct `QBusinessSlackApp` defined in the `q_business_slack_app_construct` package. If you want to use this construct in other CDK projects, simply copy and paste the package. 
+- The `main_stack` module of the `stacks` package implements the stack that is deployed when running `cdk deploy`. It instantiates the custom construct mentioned above:
+
+```python
+class MainStack(Stack):
+    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        QBusinessSlackApp(self, "QBusinessSlackApp")
+```
+
+If you want the application to behave as explained in the previous sections, **you don't need to make any changes in the infrastructure definition**. The code of the Lambda functions is defined inside the `assets/lambda_` path.
+
+Feel free to add any files to the folder `assets/q_app_bucket_contents`, which will be uploaded as part of the deployment process, and you can later consume as a data source for your Q Business application.
+
+### Custom AWS Lambda Layer
+
+There are a set of utility functions and manager classes used across AWS Lambda functions that are exposed through an AWS Lambda Layer. The contents of this layer are in `assets/lambda_layer/python`. You can see that this layer contains the Slack SDK and the package `app_layer`, which is where the following packages are implemented:
+
+#### Entity managers
+
+- `slack_manager`: contains the class `SlackManager`, which defines a set of methods that encapsulate the interaction with the Slack SDK.
+- `users_manager`: defines a set of methods that encapsulate the interaction with the boto3 library to operate with DynamoDB resources.
+
+#### Utils
+
+- `lambda_utils`: encapsulates the logic of determining the AWS Lambda invocation environment –dev or prod–.
+- `secrets_manager_utils`: defines a set of methods that encapsulate the interaction with the boto3 library to operate with SecretsManager resources.
+- `slack_utils`: encapsulates the logic of verifying requests, parsing commands and validating operations.
+- `slack_operations_definition`: defines what operations exist in each environment and which users have permission to execute those.
+
+> Remember to update the value of the `SLASH_COMMAND` constant defined in the `slack_operations_definition` module with the command that you created in step 8 of [creating and configuring your Slack application](#creating-and-configuring-your-slack-application).
 
 
 ## Deploying this sample
@@ -191,14 +227,14 @@ After deploying the infrastructure and configuring the integration with Slack, o
 
 Open the messages tab of your application in Slack:
 1. Type `/<your-slash-command> help`: the application should reply with the contents you've defined in `q_business_slack_app_construct/assets/lambda_/func_help/response_block.json`
-   - If you don't receive a message, verify that your [slash command](#creating-and-configuring-your-slack-application) is configured properly.
+   - If you don't receive a message, verify that your [slash command](#creating-and-configuring-your-slack-application) is configured properly and that the response blocks are in accordance to Slack's expected syntax.
 2. Type `/<your-slash-command> ask` "*Your question to the model here*": the application should show a *processing* message with the question you've typed, and some seconds later the message should update with the response of the model. 
    - If you don't receive a message, verify that your [slash command](#creating-and-configuring-your-slack-application) is configured properly.
    - Also verify that your data sources have been properly added to the Q Business application, and that there has been at least one successful sync.
 
 The two operations that come out of the box accept the option `--dev` when invoked, for instance `/<your-slash-command> help --dev`. You can use this to influence which AWS Lambda function alias is invoked by the `handleSlashCommand` dispatcher function.
 
-To define which operations are available in each environment and which users can invoke them, see [understanding the code and execution flow](#understanding-the-code-and-execution-flow).
+To define which operations are available in each environment and which users can invoke them, see [understanding the code](#understanding-the-code).
 
 See below how the user interface looks like:
 

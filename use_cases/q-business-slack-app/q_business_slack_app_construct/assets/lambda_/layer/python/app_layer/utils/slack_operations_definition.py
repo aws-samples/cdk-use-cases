@@ -9,7 +9,7 @@ OP_HELP = 'help'
 
 OPTION_DEV = '--dev'
 
-# TODO: add allowed users
+# TODO: add allowed users. Use a wildcard '*' to allow-list all users
 OP_DEFINITION = {
     Env.DEV.value: {
         OP_HELP: {
@@ -28,13 +28,13 @@ OP_DEFINITION = {
         OP_HELP: {
             'requiredOptions': [],
             'acceptedOptions': [OPTION_DEV],
-            'allowedUsers': [],
+            'allowedUsers': ['*'],
         },
         OP_ASK: {
             'minQuestionLength': 15,
             'requiredOptions': [],
             'acceptedOptions': [OPTION_DEV],
-            'allowedUsers': [],
+            'allowedUsers': ['*'],
         }
     }
 }
