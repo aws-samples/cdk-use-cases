@@ -36,9 +36,13 @@ To facilitate the testing process, two completely isolated environments –dev a
 2. Creating two stages in the REST API. Each stage points to the corresponding AWS Lambda function alias.
 3. Creating two AWS DynamoDB tables for storing user data. Each AWS Lambda function alias uses its corresponding table.
 
-The image below illustrates the environment segregation:
+When the user triggers an application event (such as opening the app home tab) or invokes a slash command normally, the production environment is used:
 
-![image](docs/enviroments.png)
+![image](docs/env_prod.png)
+
+On the other hand, if the user invokes a slash command with the `--dev` option (they must have permission to do so, see [understanding the code](#understanding-the-code-and-execution-flow)), the development environment is used:
+
+![image](docs/env_dev.png)
 
 ## Creating and configuring your Slack application
 
