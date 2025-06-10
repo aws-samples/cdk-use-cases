@@ -1,0 +1,20 @@
+- name: DeployCDKFromTar
+  action: aws:runShellScript
+  inputs:
+    runCommand:
+      - "#!/bin/bash"
+      - echo '=== Installing CDK and virtualenv ==='
+      - npm install -g --force aws-cdk
+      - pip install virtualenv
+      - echo '=== Downloading compressed CDK project ==='
+      - wget {{ URL }} -O cdk-project.tar.gz
+      - tar xzvf cdk-project.tar.gz
+      - cd cdk-project
+      - echo '=== Installing project dependencies ==='
+      - virtualenv .venv
+      - source .venv/bin/activate
+      - pip install -r requirements.txt
+      - echo '=== Bootstrapping AWS account ==='
+      - cdk bootstrap --force
+      - echo '=== Deploying CDK project ==='
+      - cdk deploy {{ STACK_NAME }}

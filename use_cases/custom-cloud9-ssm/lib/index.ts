@@ -1,26 +1,12 @@
-/**
- *  Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
- *  with the License. A copy of the License is located at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES
- *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions
- *  and limitations under the License.
- */
-
-import * as cdk from '@aws-cdk/core';
-import * as ec2 from '@aws-cdk/aws-ec2';
-import * as cloud9 from '@aws-cdk/aws-cloud9';
-import * as ssm from '@aws-cdk/aws-ssm';
-import * as lambda from '@aws-cdk/aws-lambda';
-import * as iam from '@aws-cdk/aws-iam';
+import {CustomResource, Duration, Stack, Tags} from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as cloud9 from 'aws-cdk-lib/aws-cloud9';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
+import * as iam from 'aws-cdk-lib/aws-iam';
 
 const yaml = require('yaml')
 const fs   = require('fs')
-
 
 export interface CustomCloud9SsmProps {
     /**
@@ -35,17 +21,18 @@ export interface CustomCloud9SsmProps {
      *
      * @default: none
      */
-    readonly cloud9Ec2Props?: cloud9.Ec2EnvironmentProps
+    readonly cloud9Ec2Props?: cloud9.CfnEnvironmentEC2Props
 }
 
-export class CustomCloud9Ssm extends cdk.Construct {
-    private static readonly DEFAULT_EBS_SIZE = 100
+export class CustomCloud9Ssm extends Construct {
+    private static readonly DEFAULT_EBS_SIZE = 50
     private static readonly DEFAULT_DOCUMENT_FILE_NAME = `${__dirname}/assets/default_document.yml`
     private static readonly RESIZE_STEP_FILE_NAME = `${__dirname}/assets/resize_ebs_step.yml`
+    private static readonly DEPLOY_CDK_STEP_FILE_NAME = `${__dirname}/assets/deploy_cdk_from_tar.yml`
     private static readonly ATTACH_PROFILE_FILE_NAME = `${__dirname}/assets/profile_attach.py`
-    private static readonly DEFAULT_DOCUMENT_NAME = 'CustomCloudSsm-SsmDocument'
+    private static readonly DEFAULT_DOCUMENT_NAME = 'SsmDocument'
 
-    private document: ssm.CfnDocument
+    private readonly document: ssm.CfnDocument
 
     /**
      * The IAM Role that is attached to the EC2 instance launched with the Cloud9 environment to grant it permissions to execute the statements in the SSM Document.
@@ -54,7 +41,7 @@ export class CustomCloud9Ssm extends cdk.Construct {
 
     /**
      * Adds one or more steps to the content of the SSM Document.
-     * @param steps: YAML formatted string containing one or more steps to be added to the mainSteps section of the SSM Document.
+     * @param steps YAML formatted string containing one or more steps to be added to the mainSteps section of the SSM Document.
      */
     public addDocumentSteps(steps: string): void {
         // Add the mainSteps section if it doesn't exist
@@ -68,7 +55,7 @@ export class CustomCloud9Ssm extends cdk.Construct {
 
     /**
      * Adds one or more parameters to the content of the SSM Document.
-     * @param parameters: YAML formatted string containing one or more parameters to be added to the parameters section of the SSM Document.
+     * @param parameters YAML formatted string containing one or more parameters to be added to the parameters section of the SSM Document.
      */
     public addDocumentParameters(parameters: string): void {
         // Add the parameters section if it doesn't exist
@@ -82,7 +69,7 @@ export class CustomCloud9Ssm extends cdk.Construct {
 
     /**
      * Adds a step to the SSM Document content that resizes the EBS volume of the EC2 instance. Attaches the required policies to ec2Role.
-     * @param size: size in GiB to resize the EBS volume to.
+     * @param size in GiB to resize the EBS volume to.
      */
     public resizeEBSTo(size: number): void {
         let steps: string = fs.readFileSync(CustomCloud9Ssm.RESIZE_STEP_FILE_NAME, 'utf8')
@@ -103,32 +90,75 @@ export class CustomCloud9Ssm extends cdk.Construct {
         }))
     }
 
-    constructor(scope: cdk.Construct, id: string, props: CustomCloud9SsmProps) {
-        super(scope, id)
+    /**
+     * Adds a step to the SSM Document content that deploys a CDK project from its compressed version.
+     * @param url from where to download the file using the wget command. Attaches the required policies to ec2Role.
+     * @param stackName name of the stack to deploy
+     */
+    public deployCDKProject(url: string, stackName: string = ''): void {
+        let steps: string = fs.readFileSync(CustomCloud9Ssm.DEPLOY_CDK_STEP_FILE_NAME, 'utf8')
+        steps = steps.replace('{{ URL }}', url)
+        steps = steps.replace('{{ STACK_NAME }}', stackName)
 
-        let cloud9Env: cloud9.Ec2Environment
+
+        // Add the deployment step
+        this.addDocumentSteps(steps)
+
+        // Grant permission to the EC2 instance to work with the s3 bucket that contains bootstrapped files
+        this.ec2Role.addToPolicy(new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: [
+                's3:*'
+            ],
+            resources: ['arn:aws:s3:::cdk-*']
+        }))
+
+        // Grant permission to the EC2 instance to work with the stack that contains bootstrapped , and the stack being deployed
+        const accountId = Stack.of(this).account
+        const region = Stack.of(this).region
+
+        this.ec2Role.addToPolicy(new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: [
+                'cloudformation:*',
+            ],
+            resources: [
+                `arn:aws:cloudformation:${region}:${accountId}:stack/CDKToolkit/*`,
+                `arn:aws:cloudformation:${region}:${accountId}:stack/${stackName}/*`
+            ]
+        }))
+    }
+
+    constructor(scope: Construct, id: string, props: CustomCloud9SsmProps = {}) {
+        super(scope, id);
+
+        let cloud9Env: cloud9.CfnEnvironmentEC2
+        let ssmAssociation: ssm.CfnAssociation
+        let customResource: CustomResource
 
         // Create the Cloud9 environment using the default configuration
         if (!props.cloud9Ec2Props) {
-            cloud9Env = new cloud9.Ec2Environment(this,'Cloud9Ec2Environment', {
-                vpc: new ec2.Vpc(this, id + '-VPC', {
-                    maxAzs: 2
-                })
+            cloud9Env = new cloud9.CfnEnvironmentEC2(this,'Cloud9Ec2Environment', {
+                instanceType: "t3.large",
+                imageId: "amazonlinux-2023-x86_64"
             })
         }
         // Create the Cloud9 environment using the received props
         else {
-            cloud9Env = new cloud9.Ec2Environment(this,'Cloud9Ec2Environment', props.cloud9Ec2Props)
+            cloud9Env = new cloud9.CfnEnvironmentEC2(this,'Cloud9Ec2Environment', props.cloud9Ec2Props)
         }
+
+        // Add a unique tag to the environment to use it as a target for the SSM Association
+        Tags.of(cloud9Env).add('stack-id', Stack.of(this).stackId)
 
         // Create a Role for the EC2 instance and an instance profile with it
         this.ec2Role = new iam.Role(this,'Ec2Role', {
             assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
-            roleName: id + '-CustomCloud9SsmEc2Role',
+            roleName: 'CustomCloud9SsmEc2Role',
             managedPolicies: [
                 iam.ManagedPolicy.fromManagedPolicyArn(
                     this,
-                    id + '-SsmManagedPolicy',
+                    'SsmManagedPolicy',
                     'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'
                 )
             ]
@@ -144,7 +174,7 @@ export class CustomCloud9Ssm extends cdk.Construct {
             const ssmDocumentProps = {
                 documentType: 'Command',
                 content: yaml.parse(content),
-                name: id + '-' + CustomCloud9Ssm.DEFAULT_DOCUMENT_NAME
+                name: CustomCloud9Ssm.DEFAULT_DOCUMENT_NAME
             }
 
             this.document = new ssm.CfnDocument(this,'SsmDocument', ssmDocumentProps)
@@ -160,12 +190,12 @@ export class CustomCloud9Ssm extends cdk.Construct {
         }
 
         // Create an SSM Association to apply the document configuration
-        new ssm.CfnAssociation(this,'SsmAssociation', {
+        ssmAssociation = new ssm.CfnAssociation(this,'SsmAssociation', {
             name: this.document.name as string,
             targets: [
                 {
-                    key: 'tag:aws:cloud9:environment',
-                    values: [cloud9Env.environmentId]
+                    key: 'tag:stack-id',
+                    values: [Stack.of(this).stackId]
                 }
             ]
         })
@@ -173,11 +203,12 @@ export class CustomCloud9Ssm extends cdk.Construct {
         // Create the Lambda function that attaches the instance profile to the EC2 instance
         let code: string = fs.readFileSync(CustomCloud9Ssm.ATTACH_PROFILE_FILE_NAME, 'utf8')
 
-        const lambdaFunction = new lambda.Function(this,'LambdaFunction', {
-            runtime: lambda.Runtime.PYTHON_3_9,
+        const lambdaFunction = new lambda.Function(this,'ProfileAttachLambdaFunction', {
+            runtime: lambda.Runtime.PYTHON_3_11,
             code: lambda.Code.fromInline(code),
             handler: 'index.handler',
-            timeout: cdk.Duration.seconds(60)
+            timeout: Duration.seconds(800),
+            retryAttempts: 0
         })
 
         // Give permissions to the function to execute some APIs
@@ -189,18 +220,29 @@ export class CustomCloud9Ssm extends cdk.Construct {
                 'ec2:ReplaceIamInstanceProfileAssociation',
                 'ec2:RebootInstances',
                 'iam:ListInstanceProfiles',
-                'iam:PassRole'
+                'iam:PassRole',
+                'ssm:DescribeAssociationExecutions',
+                'ssm:DescribeAssociationExecutionTargets'
             ],
             resources: ['*']
         }))
 
         // Create the Custom Resource that invokes the Lambda function
-        new cdk.CustomResource(this, 'CustomResource', {
+        customResource = new CustomResource(this, 'CustomResource', {
             serviceToken: lambdaFunction.functionArn,
             properties: {
-                cloud9_env_id: cloud9Env.environmentId,
-                profile_arn: instanceProfile.attrArn
+                stack_id: Stack.of(this).stackId,
+                profile_arn: instanceProfile.attrArn,
+                association_id: ssmAssociation.attrAssociationId
             }
         })
+
+        instanceProfile.node.addDependency(this.ec2Role)
+
+        ssmAssociation.node.addDependency(cloud9Env)
+        ssmAssociation.node.addDependency(this.document)
+
+        customResource.node.addDependency(instanceProfile)
+        customResource.node.addDependency(ssmAssociation)
     }
 }

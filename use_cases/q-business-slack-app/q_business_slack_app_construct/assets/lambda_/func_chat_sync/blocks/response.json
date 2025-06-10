@@ -1,0 +1,18 @@
+[
+	{
+		"type": "header",
+		"text": {
+			"type": "plain_text",
+			"text": "",
+			"emoji": true
+		}
+	},
+	{
+		"type": "section",
+		"text": {
+			"type": "plain_text",
+			"text": "",
+			"emoji": true
+		}
+	}
+]

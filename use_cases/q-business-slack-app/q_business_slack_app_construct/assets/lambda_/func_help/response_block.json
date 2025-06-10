@@ -1,0 +1,46 @@
+[
+   {
+      "type":"section",
+      "text":{
+         "type":"mrkdwn",
+         "text":"*Available commands*"
+      }
+   },
+   {
+      "type":"rich_text",
+      "elements":[
+         {
+            "type":"rich_text_section",
+            "elements":[
+               {
+                  "type":"text",
+                  "text":"/[your-slash-command] ask ",
+                  "style":{
+                     "bold":false
+                  }
+               },
+               {
+                  "type":"text",
+                  "text":"[\"your question\"]",
+                  "style": {
+                       "italic": true
+                   }
+               }
+            ]
+         }
+      ]
+   },
+   {
+      "type":"context",
+      "elements":[
+         {
+            "type":"mrkdwn",
+            "text":"Ask a question to the model. Example:\n"
+         },
+         {
+            "type":"mrkdwn",
+            "text":"`/[your-slash-command]` ask [\"Your question\"]"
+         }
+      ]
+   }
+]
