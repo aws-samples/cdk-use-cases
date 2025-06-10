@@ -207,7 +207,7 @@ To deploy the stack specifying a value for all the parameters, run the command b
 cdk deploy --parameters SlackToken=<value> --parameters SlackSigningSecret=<value> --parameters AppName=<value>
 ```
 
-The deployment process will take roughly **2 minutes** to complete.
+The deployment process will take roughly **5 minutes** to complete.
 
 ## Adding data sources to the Q Business Application
 
