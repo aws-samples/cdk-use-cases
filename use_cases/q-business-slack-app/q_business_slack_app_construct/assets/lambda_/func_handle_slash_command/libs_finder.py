@@ -8,4 +8,4 @@ def is_aws_env() -> bool:
 if is_aws_env():
     from app_layer import *
 else:
-    from assets.lambda_.layer.python.app_layer import *
+    from q_business_slack_app_construct.assets.lambda_.layer.python.app_layer import *

@@ -22,11 +22,36 @@ This repository contains a CDK Python sample that provides a quick-start to depl
 - [Out of the box features](#out-of-the-box-features)
 - [Understanding the code and execution flow](#understanding-the-code-and-execution-flow)
 - [Deploying this sample](#deploying-this-sample)
-- [Adding data sources to the Q Business Application](#adding-data-sources-to-the-q-business-application-)
+- [Adding data sources to the Q Business Application](#adding-data-sources-to-the-q-business-application)
 - [Testing the application](#testing-the-application)
 - [Cleaning up](#cleaning-up)
 
 ## Project architecture
+
+An AWS API Gateway REST API acts as the communication point between the Slack application and the rest of AWS resources. It has two publicly accessible endpoints:
+
+- `handle-slack-event`: invoked by the Slack application whenever the user triggers an application event, such as opening the home tab.
+- `handle-slash-command`: invoked by the Slack application whenever the user triggers the slash command to use the `ask` or `help` operations.
+
+Each of those endpoints will synchronously invoke the corresponding AWS Lambda function to handle the request. Those functions:
+1. Verify the authenticity of the request by using your [signing secret](https://api.slack.com/authentication/verifying-requests-from-slack)
+2. Handle the request honoring Slack's 3 seconds timeout
+3. Send an [acknowledgement response](https://api.slack.com/interactivity/handling#acknowledgment_response)
+
+In the case of the `handleSlackEvent` function, after verifying the authenticity of the request, it will:
+1. If the event is `url_verification` [(see here)]((https://api.slack.com/events/url_verification)), handle it by replying with the received challenge.
+2. If the event is `app_home_opened` and it's the first time that the user triggers it, onboard them to the application by configuring their application home tab and sending them a welcome message.
+
+In the case of the `handleSlashCommand` function, after verifying the authenticity of the request, it will:
+1. Validate the format of the received command.
+2. If the operation to be performed is `ask`, asynchronously invoke the `ask` function passing the user text as an argument.
+3. If the operation to be performed is `help`, asynchronously invoke the `help` function.
+
+In regard to operation execution:
+
+- The `help` function will post a message to the user's channel with the help contents that you define. See [out of the box features](#out-of-the-box-features).
+- The `ask` function will post a *processing* message to the user's channel and asynchronously invoke the `chat_sync` function.
+- The `chat_sync` function will take user's text and perform an API call to the Q Business application. Finally. it will update the previous *processing* text with the response of the model.
 
 ![image](docs/architecture.png)
 
@@ -88,6 +113,8 @@ If you deploy the sample as-is and configure the integration with Slack, the app
   5. The `ask` operation will take the user's question, pass it to the model and return its response. You can control the formatting of the messages by defining the contents of `q_business_slack_app_construct/assets/lambda_/func_ask/response_block.json` and `q_business_slack_app_construct/assets/lambda_/func_chat_sync/blocks/`
 
 > No data sources are added to the Q Business application as part of the deployment process. To add data sources, see [adding data sources](#adding-data-sources-to-the-q-business-application).
+
+> To format the messages that your application sends to users, see [Slack Block Kit](https://api.slack.com/block-kit).
 
 ## Understanding the code and execution flow
 
