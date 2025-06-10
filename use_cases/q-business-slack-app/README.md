@@ -11,6 +11,7 @@ This repository contains a CDK Python sample that provides a quick-start to depl
 - An **AWS DynamoDB table** to store Slack usernames, user ids and channel ids
 - Two **AWS Secrets Manager secrets** to safely store your [Slack bot token](https://api.slack.com/concepts/token-types#bot) and your [Slack signing secret](https://api.slack.com/authentication/verifying-requests-from-slack)
 - A set of **AWS Lambda functions** to reply to Slack application events and Slack slash commands
+- An **AWS Lambda layer** with helper methods used across functions
 - An **Amazon Q Business application** without user interface
 - An **Amazon S3 bucket** to store the data sources of the Amazon Q Business Application
 
@@ -57,11 +58,11 @@ The image below illustrates the environment segregation:
 
 As of this point you will need your REST API endpoints, so you will need to deploy the infrastructure before continuing. Refer to [deploying this sample](#deploying-this-sample) and continue with step 8 when you are done.
 
-8. Now it's time to enable interactivity in the application. Under **Features**, in the **Slash Commands** tab, create one command that will invoke your application. Fill the Request URL field with the REST API endpoint that contains `handle-slash-command`.
+8. Now it's time to enable interactivity in the application. Under **Features**, in the **Slash Commands** tab, create one command that will invoke your application. Fill the Request URL field with the `prod` stage REST API endpoint that contains `handle-slash-command`.
 
 ![image](docs/slack_app_onboarding/step_3.png)
 
-9. Next, under **Features**, in the **Event Subscriptions** tab, toggle **Enable Events** and fill the Request URL field with the REST API endpoint that contains `handle-slack-event`. If you select the correct one, it should verify shortly.
+9. Next, under **Features**, in the **Event Subscriptions** tab, toggle **Enable Events** and fill the Request URL field with the `prod` stage REST API endpoint that contains `handle-slack-event`. If you select the correct one, it should verify shortly.
 10. In the same page, under **Subscribe to bot events**, add `app_home_opened`.
 11. Since you have now enabled Slash commands, the Bot token scopes have changed, and you need to reinstall the application in the workspace.
 
@@ -78,7 +79,7 @@ If you deploy the sample as-is and configure the integration with Slack, the app
 - In regard to slash commands:
   1. Parse them in form of `/slash-command [operation] [options]`. For instance `/my-bot help` or `my-bot ask "your question to the model here" --option_1 --option_2=something`. 
   2. Recognise the `ask` and `help` operations and execute them accordingly.
-  3. Validate the format of the command as well as and passed operation and options, automatically replying with an error message if the user typed something mistakenly.
+  3. Validate the format of the command as well as operation and options, automatically replying with an error message if the user typed something mistakenly.
   4. The `help` operation will reply with the contents that you define in `q_business_slack_app_construct/assets/lambda_/func_help/response_block.json`
   5. The `ask` operation will take the user's question, pass it to the model and return its response. You can control the formatting of the messages by defining the contents of `q_business_slack_app_construct/assets/lambda_/func_ask/response_block.json` and `q_business_slack_app_construct/assets/lambda_/func_chat_sync/blocks/`
 
@@ -154,8 +155,8 @@ For more details, check [the documentation](https://docs.aws.amazon.com/amazonq/
 ## Testing the application
 
 After deploying the infrastructure and configuring the integration with Slack, open the home tab of your application in Slack:
-1. If it's the first time that you do so, you should receive a welcome message. You can also verify that your user details have been stored in the DynamoDB table. 
-   2. If the first time that you open the home tab you don't receive a message, verify that your [event subscriptions](#creating-and-configuring-your-slack-application) are properly configured.
+1. If it's the first time that you do so, you should receive a welcome message. You can also verify that your user details have been stored in the DynamoDB table.
+   - If the first time that you open the home tab you don't receive a message, verify that your [event subscriptions](#creating-and-configuring-your-slack-application) are properly configured.
 
 Open the messages tab of your application in Slack:
 1. Type `/<your-slash-command> help`: the application should reply with the contents you've defined in `q_business_slack_app_construct/assets/lambda_/func_help/response_block.json`
