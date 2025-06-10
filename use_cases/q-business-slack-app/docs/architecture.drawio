@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/27.0.9 Chrome/134.0.6998.205 Electron/35.4.0 Safari/537.36" version="27.0.9">
   <diagram name="Page-1" id="E1yphKj9x4a1t7dntPr7">
-    <mxGraphModel dx="2036" dy="1554" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1273" dy="971" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -170,14 +170,29 @@
         <mxCell id="XRreP480vv-pNLj2xfAw-50" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="XRreP480vv-pNLj2xfAw-7" source="XRreP480vv-pNLj2xfAw-46" target="XRreP480vv-pNLj2xfAw-26">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="XRreP480vv-pNLj2xfAw-67" value="Consumes to&lt;div&gt;send messages&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="XRreP480vv-pNLj2xfAw-50">
+          <mxGeometry x="-0.0033" y="2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
         <mxCell id="XRreP480vv-pNLj2xfAw-46" value="Bot token secret" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#DD344C;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.secrets_manager;" vertex="1" parent="XRreP480vv-pNLj2xfAw-7">
           <mxGeometry x="510" y="371" width="78" height="78" as="geometry" />
         </mxCell>
         <mxCell id="XRreP480vv-pNLj2xfAw-52" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" edge="1" parent="XRreP480vv-pNLj2xfAw-7" source="XRreP480vv-pNLj2xfAw-46" target="XRreP480vv-pNLj2xfAw-12">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="XRreP480vv-pNLj2xfAw-68" value="Consumes to&lt;div&gt;send messages&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="XRreP480vv-pNLj2xfAw-52">
+          <mxGeometry x="-0.0188" y="-3" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
         <mxCell id="XRreP480vv-pNLj2xfAw-53" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="XRreP480vv-pNLj2xfAw-7" source="XRreP480vv-pNLj2xfAw-46" target="XRreP480vv-pNLj2xfAw-36">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="XRreP480vv-pNLj2xfAw-66" value="Consumes to&lt;div&gt;send messages&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="XRreP480vv-pNLj2xfAw-53">
+          <mxGeometry x="-0.0446" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="XRreP480vv-pNLj2xfAw-57" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="XRreP480vv-pNLj2xfAw-7" source="XRreP480vv-pNLj2xfAw-36">
           <mxGeometry relative="1" as="geometry">
